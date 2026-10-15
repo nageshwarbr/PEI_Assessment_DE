@@ -9,9 +9,12 @@ def ingest_csv(spark,filepath, table_name):
     df.write.mode("overwrite").option("delta.columnMapping.mode","name").saveAsTable(f"ecommerce_catalog.bronze.{table_name}")
 
 def ingest_json(spark,filepath, table_name):
-    df = spark.read.format("json").option("multiLine", "true").load(filepath)
-    df.write.mode("overwrite").option("delta.columnMapping.mode","name").saveAsTable(f"ecommerce_catalog.bronze.{table_name}")
-
+    try:
+        df = spark.read.format("json").option("multiLine", "true").load(filepath)
+        df.write.mode("overwrite").option("delta.columnMapping.mode","name").saveAsTable(f"ecommerce_catalog.bronze.{table_name}")
+    except Exception:
+        print("Failed to load/write json file, something went wrong")
+        raise
 
 def ingest_excel(spark,filepath,sheet,table_name):
     df = pd.read_excel(filepath,sheet_name=sheet,header=0)

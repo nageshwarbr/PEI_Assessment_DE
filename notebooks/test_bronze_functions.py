@@ -96,7 +96,24 @@ def test_ingest_json():
     )
 
 
+def test_ingest_csv_load_failure():
+    spark = MagicMock()
 
+    spark.read.format.return_value = spark.read
+    spark.read.option.return_value = spark.read
+    spark.read.load.side_effect = Exception("File not found")
+    with pytest.raises(Exception, match="File not found"):
+        ingest_csv(spark, "/invalid/path.csv", "products")
+
+    spark.read.load.assert_called_once_with("/invalid/path.csv")
     
+def test_ingest_json_failure():
+    spark = MagicMock()
+    df = MagicMock()
+    spark.read.format.return_value = spark.read
+    spark.read.option.side_effect = Exception("File not found")
+    with pytest.raises(Exception, match="File not found"):
+        ingest_json(spark, "/invalid/path.json", "products")
+
 
     
